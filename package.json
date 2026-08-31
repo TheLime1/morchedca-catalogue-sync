@@ -1,0 +1,15 @@
+{
+  "name": "morchedca-catalogue-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Validated Meta product catalog feed for morchedca.store",
+  "scripts": {
+    "build": "node scripts/build-catalog.mjs",
+    "validate": "node scripts/validate-catalog.mjs public/catalog_products.csv",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
