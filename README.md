@@ -23,7 +23,7 @@ No store credentials, Converty OAuth, browser scraping, or GitHub Secrets are us
 3. Open **Actions → Catalog sync** and choose **Run workflow** for the first deployment.
 4. After the run succeeds, GitHub shows the deployment URL in the `github-pages` environment and on the workflow summary.
 
-The workflow also runs at minute 17 of 04:00 UTC approximately every three days. GitHub cron expressions use UTC, and scheduled runs can start late when GitHub Actions is busy.
+The workflow runs daily at 04:37 UTC. This time avoids the top-of-hour queue and falls outside the main US and European working day. GitHub cron expressions use UTC, and scheduled runs can still start late when GitHub Actions is busy.
 
 ## Manual refresh and local checks
 

@@ -3,8 +3,8 @@ name: Catalog sync
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron is UTC and scheduled jobs may start late under load.
-    - cron: "17 4 */3 * *"
+    # 04:37 UTC avoids the top-of-hour queue and major US/EU working hours.
+    - cron: "37 4 * * *"
 
 permissions:
   contents: read
