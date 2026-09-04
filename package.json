@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Validated Meta product catalog feed for morchedca.store",
+  "description": "Validated Meta product catalog feed for scolaire.clubafricain.com",
   "scripts": {
     "build": "node scripts/build-catalog.mjs",
     "validate": "node scripts/validate-catalog.mjs public/catalog_products.csv",

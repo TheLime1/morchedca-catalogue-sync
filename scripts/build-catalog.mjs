@@ -12,8 +12,10 @@ import {
 } from "./validate-catalog.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const PRODUCTS_ENDPOINT = "https://morchedca.store/api/v1/products";
-const CATEGORIES_ENDPOINT = "https://morchedca.store/api/v1/categories";
+const STOREFRONT_ORIGIN = "https://scolaire.clubafricain.com";
+const STOREFRONT_HOST = "scolaire.clubafricain.com";
+const PRODUCTS_ENDPOINT = `${STOREFRONT_ORIGIN}/api/v1/products`;
+const CATEGORIES_ENDPOINT = `${STOREFRONT_ORIGIN}/api/v1/categories`;
 const MAPPING_PATH = resolve(ROOT, "data/variant-image-mapping.json");
 const PUBLIC_PATH = resolve(ROOT, "public/catalog_products.csv");
 const TEMP_PATH = resolve(ROOT, ".catalog-products.pending.csv");
@@ -359,7 +361,7 @@ function baseRow(product, categoryTag) {
       availability: "",
       condition: "new",
       price: "",
-      link: `https://morchedca.store/product/${encodeURIComponent(product.slug)}`,
+      link: `${STOREFRONT_ORIGIN}/product/${encodeURIComponent(product.slug)}`,
       image_link: "",
       brand: "El Morched",
       google_product_category: "Office Supplies",
@@ -382,7 +384,7 @@ function baseRow(product, categoryTag) {
       "video[0].tag[0]": "",
       gtin: "",
       "product_tags[0]": categoryTag,
-      "product_tags[1]": "morchedca.store",
+      "product_tags[1]": STOREFRONT_HOST,
       "style[0]": "",
     },
   };

@@ -52,6 +52,7 @@ export const REQUIRED_COLUMNS = Object.freeze([
 const USER_AGENT =
   "MorchedCA-Catalogue-Sync/1.0 (+https://github.com/TheLime1/morchedca-catalogue-sync)";
 const PRICE_PATTERN = /^(?:0|[1-9]\d*)\.\d{2} TND$/;
+const STOREFRONT_HOST = "scolaire.clubafricain.com";
 
 export class CatalogValidationError extends Error {
   constructor(errors) {
@@ -227,8 +228,8 @@ export function validateRows(rows, context = {}) {
     if (row.sale_price && !PRICE_PATTERN.test(row.sale_price)) {
       errors.push(`${label}: sale_price "${row.sale_price}" is not formatted as 0.00 TND.`);
     }
-    if (!isHttpsUrl(row.link, "morchedca.store")) {
-      errors.push(`${label}: link must be an HTTPS morchedca.store URL.`);
+    if (!isHttpsUrl(row.link, STOREFRONT_HOST)) {
+      errors.push(`${label}: link must be an HTTPS ${STOREFRONT_HOST} URL.`);
     }
     if (!isHttpsUrl(row.image_link)) {
       errors.push(`${label}: image_link must be an HTTPS URL.`);

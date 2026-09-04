@@ -110,7 +110,7 @@ test("serializeCsv emits a BOM, exact header, valid quoting, and CRLF", () => {
     availability: "in stock",
     condition: "new",
     price: "1.00 TND",
-    link: "https://morchedca.store/product/test",
+    link: "https://scolaire.clubafricain.com/product/test",
     image_link: "https://images.example/test.webp",
     brand: "El Morched",
   });
@@ -133,7 +133,7 @@ test("validation rejects duplicate ids", () => {
     availability: "in stock",
     condition: "new",
     price: "1.00 TND",
-    link: "https://morchedca.store/product/test",
+    link: "https://scolaire.clubafricain.com/product/test",
     image_link: "https://images.example/test.webp",
     brand: "El Morched",
     color: "",
@@ -141,4 +141,26 @@ test("validation rejects duplicate ids", () => {
     sale_price: "",
   };
   assert.match(validateRows([row, row]).join("\n"), /duplicate id/);
+});
+
+test("validation rejects product links from the previous storefront host", () => {
+  const row = {
+    id: "legacy-host",
+    title: "Title",
+    description: "Description",
+    availability: "in stock",
+    condition: "new",
+    price: "1.00 TND",
+    link: "https://morchedca.store/product/test",
+    image_link: "https://images.example/test.webp",
+    brand: "El Morched",
+    color: "",
+    item_group_id: "",
+    sale_price: "",
+  };
+
+  assert.match(
+    validateRows([row]).join("\n"),
+    /link must be an HTTPS scolaire\.clubafricain\.com URL/,
+  );
 });

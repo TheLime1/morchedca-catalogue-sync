@@ -1,6 +1,6 @@
 # MorchedCA Meta catalog sync
 
-This repository builds a validated Facebook/Meta product catalog from the public JSON APIs at [morchedca.store](https://morchedca.store) and deploys the result with GitHub Pages.
+This repository builds a validated Facebook/Meta product catalog from the public JSON APIs at [scolaire.clubafricain.com](https://scolaire.clubafricain.com) and deploys the result with GitHub Pages.
 
 The public feed URL is:
 
@@ -82,7 +82,7 @@ If any check fails, the job exits nonzero and no Pages deployment is attempted. 
 
 The storefront APIs are public but unofficial:
 
-- `https://morchedca.store/api/v1/products`
-- `https://morchedca.store/api/v1/categories`
+- `https://scolaire.clubafricain.com/api/v1/products`
+- `https://scolaire.clubafricain.com/api/v1/categories`
 
 The sync validates response shape, pagination totals, stable IDs, category references, option/variant alignment, and catalog coverage so a schema change fails safely instead of publishing HTML, a login response, an empty file, or a partial feed. Review the scripts if the storefront API schema intentionally changes.
