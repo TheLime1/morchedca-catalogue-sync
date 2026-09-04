@@ -2,6 +2,9 @@ name: Catalog sync
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
   schedule:
     # 04:37 UTC avoids the top-of-hour queue and major US/EU working hours.
     - cron: "37 4 * * *"
