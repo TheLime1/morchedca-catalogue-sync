@@ -241,16 +241,20 @@ function makeMappingLookup(mappingForProduct, slug) {
   return lookup;
 }
 
-function validateMappingEntry(slug, mappingLookup, gallery) {
-  if (!mappingLookup) return;
-  for (const { color, url } of mappingLookup.values()) {
-    if (!isHttpUrl(url)) {
-      throw new Error(`${slug} / ${color}: mapped image is not a valid HTTP URL.`);
-    }
-    if (!gallery.has(url)) {
-      throw new Error(`${slug} / ${color}: mapped image is no longer part of the API gallery.`);
-    }
+function preferredGalleryImage(product, imageUrl) {
+  const key = assetKey(imageUrl);
+  for (const galleryImage of product.images ?? []) {
+    const preferred = bestImage(galleryImage);
+    if (preferred && assetKey(preferred) === key) return preferred;
   }
+  return imageUrl;
+}
+
+function imageInGallery(product, gallery, candidate) {
+  const image = bestImage(candidate);
+  if (!image) return "";
+  const preferred = preferredGalleryImage(product, image);
+  return gallery.has(preferred) ? preferred : "";
 }
 
 function valueAsText(value) {
@@ -442,12 +446,6 @@ export function buildRows(products, categories, mapping) {
 
     variantProducts += 1;
     const mappingLookup = makeMappingLookup(mapping[product.slug], product.slug);
-    if (!mappingLookup) {
-      throw new Error(
-        `${product.slug}: new variant product or missing image mapping requires verification.`,
-      );
-    }
-    validateMappingEntry(product.slug, mappingLookup, gallery);
     const groupImageKeys = new Map();
     const currentColors = new Set();
     let groupHasColor = false;
@@ -474,25 +472,18 @@ export function buildRows(products, categories, mapping) {
         currentColors.add(colorKey);
       }
 
-      let image = bestImage(variant.image);
+      const mappedImage = color ? mappingLookup?.get(normalize(color))?.url ?? "" : "";
+      let image = imageInGallery(product, gallery, mappedImage);
+      if (!image) image = imageInGallery(product, gallery, variant.image);
       if (!image) {
         if (!color) {
           throw new Error(
-            `${product.slug} / ${variant.id}: no explicit image and no color available for verified mapping.`,
+            `${product.slug} / ${variant.id}: no valid gallery image is available for this variant.`,
           );
         }
-        if (!mappingLookup) {
-          throw new Error(
-            `${product.slug} / ${color}: new variant product or missing image mapping requires verification.`,
-          );
-        }
-        image = mappingLookup.get(normalize(color))?.url ?? "";
-        if (!image) {
-          throw new Error(`${product.slug} / ${color}: missing verified image mapping.`);
-        }
-      }
-      if (!gallery.has(image)) {
-        throw new Error(`${product.slug} / ${color || variant.id}: selected image is not in the gallery.`);
+        throw new Error(
+          `${product.slug} / ${color}: neither the live API image nor the verified mapping resolves to a current gallery image.`,
+        );
       }
 
       if (color) {
@@ -535,16 +526,6 @@ export function buildRows(products, categories, mapping) {
 
     if (!groupHasColor) {
       throw new Error(`${product.slug}: variant product has no recognized color option to verify.`);
-    }
-    for (const colorKey of currentColors) {
-      if (!mappingLookup.has(colorKey)) {
-        throw new Error(`${product.slug}: new color is missing from the verified image mapping.`);
-      }
-    }
-    for (const { color } of mappingLookup.values()) {
-      if (!currentColors.has(normalize(color))) {
-        throw new Error(`${product.slug} / ${color}: mapping contains a stale color.`);
-      }
     }
   }
 

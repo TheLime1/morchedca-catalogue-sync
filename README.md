@@ -9,7 +9,7 @@ The public feed URL is:
 ## Data flow
 
 1. GitHub Actions reads every page of the public products and categories APIs.
-2. `scripts/build-catalog.mjs` keeps visible and out-of-stock products, expands variants, cleans descriptions, resolves categories, applies verified color images, and formats Meta fields.
+2. `scripts/build-catalog.mjs` keeps visible and out-of-stock products, expands the current live variants, cleans descriptions, resolves categories and color images, and formats Meta fields.
 3. The builder validates API coverage, variant sets, IDs, prices, links, image mappings, and every unique live image URL before writing a temporary CSV.
 4. Only after all checks pass is the temporary file moved to `public/catalog_products.csv`.
 5. The official GitHub Pages actions publish `public/`, and Meta downloads the stable URL on its own schedule.
@@ -51,9 +51,11 @@ The build uses retries with exponential backoff, request timeouts, a descriptive
 
 The URL returns the CSV directly and remains unchanged between deployments.
 
-## Verify a new color or variant product
+## Color and variant images
 
-The store API currently does not assign images directly to its color variants. Their verified association is therefore versioned in `data/variant-image-mapping.json`:
+The sync reads the current color list directly from the store API on every run. Adding or removing a color therefore requires no repository change. For previously verified colors, the versioned mapping is preferred because storefront variant-image assignments can drift; a new or unmapped color is discovered automatically from its explicit live API image. Small image URLs are matched to the same gallery asset and published using the preferred `lg` URL.
+
+`data/variant-image-mapping.json` remains as a verified image override and as a fallback for legacy variants whose API image is blank:
 
 ```json
 {
@@ -63,14 +65,14 @@ The store API currently does not assign images directly to its color variants. T
 }
 ```
 
-When a new color or variant product is added:
+If a variant is ever missing its API image:
 
 1. Open the product on the storefront and verify which gallery image represents each color. Do not infer the association from gallery order.
 2. Copy the preferred `lg` URL returned for that exact gallery image by the public product API (fall back to `md`, then `sm`, only if needed).
-3. Add the product slug and every current color to `data/variant-image-mapping.json`.
+3. Add only that product slug and missing-image color to `data/variant-image-mapping.json`.
 4. Run `npm run build`. The build must succeed before merging.
 
-The build deliberately fails with the exact product slug and color when a mapping is missing, its image leaves the gallery, two colors share an image, a color is duplicated, or the API adds an unverified variant. This protects Meta from silently receiving an incorrect catalog.
+The build deliberately fails with the exact product slug and color only when neither the live API image nor its verified mapping resolves to a current gallery image, two active colors share an image, or a color is duplicated. Unused mapping entries are ignored, so frequent color changes do not break the sync.
 
 ## Failure safety
 

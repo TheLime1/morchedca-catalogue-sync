@@ -13,6 +13,7 @@ import {
 } from "../scripts/validate-catalog.mjs";
 
 const IMAGE_RED = "https://images.example/red_lg.webp";
+const IMAGE_RED_SM = "https://images.example/red_sm.webp";
 const IMAGE_BLUE = "https://images.example/blue_lg.webp";
 
 test("cleanDescription decodes entities and removes HTML", () => {
@@ -50,7 +51,7 @@ test("buildRows expands variants, maps colors, prices sales, and preserves stock
           selectedValues: ["Rouge"],
           price: 9,
           comparePrice: 12,
-          image: "",
+          image: IMAGE_BLUE,
           stock: { outOfStock: true, continueSellingWhenOutOfStock: false },
         },
         {
@@ -64,7 +65,13 @@ test("buildRows expands variants, maps colors, prices sales, and preserves stock
       ],
     },
   ];
-  const mapping = { portfolio: { Rouge: IMAGE_RED, Bleu: IMAGE_BLUE } };
+  const mapping = {
+    portfolio: {
+      Rouge: IMAGE_RED,
+      Bleu: IMAGE_BLUE,
+      Vert: "https://images.example/removed-green_lg.webp",
+    },
+  };
 
   const result = buildRows(products, categories, mapping);
 
@@ -98,7 +105,43 @@ test("buildRows expands variants, maps colors, prices sales, and preserves stock
     ],
   );
   assert.equal(result.rows[0]["product_tags[0]"], "Papeterie > Classement");
+  assert.deepEqual(result.rows.map(({ color }) => color), ["Rouge", "Bleu"]);
+  assert.deepEqual(result.rows.map(({ image_link }) => image_link), [IMAGE_RED, IMAGE_BLUE]);
   assert.match(result.rows[0].description, /Options: Couleur: Rouge\.$/);
+});
+
+test("buildRows discovers current colors and images directly from live variant data", () => {
+  const products = [
+    {
+      _id: "product-live",
+      reference: 88,
+      name: "Produit dynamique",
+      slug: "produit-dynamique",
+      description: "Description",
+      status: "shown",
+      isDeleted: false,
+      categories: [],
+      images: [{ sm: IMAGE_RED_SM, lg: IMAGE_RED }],
+      price: 10,
+      options: [{ name: "Couleur", values: [{ value: "Rouge" }] }],
+      newVariants: [
+        {
+          id: "variant-live-red",
+          selectedValues: ["Rouge"],
+          price: 10,
+          image: IMAGE_RED_SM,
+          stock: { outOfStock: false, continueSellingWhenOutOfStock: false },
+        },
+      ],
+    },
+  ];
+
+  const result = buildRows(products, [], {});
+
+  assert.equal(result.rows.length, 1);
+  assert.equal(result.rows[0].id, "variant-live-red");
+  assert.equal(result.rows[0].color, "Rouge");
+  assert.equal(result.rows[0].image_link, IMAGE_RED);
 });
 
 test("serializeCsv emits a BOM, exact header, valid quoting, and CRLF", () => {
